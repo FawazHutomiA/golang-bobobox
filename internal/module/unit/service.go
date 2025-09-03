@@ -124,9 +124,17 @@ func (uc *unitService) Create(ctx context.Context, params UnitCreateRequest) (re
 }
 
 func (uc *unitService) Update(ctx context.Context, id uuid.UUID, params UnitUpdateRequest) (resp UnitUpdateResponse, errData exception.Error) {
-	_, errData = uc.Detail(ctx, id)
+	data, errData := uc.Detail(ctx, id)
 	if errData.Errors != nil {
 		return resp, exception.Error(errData)
+	}
+
+	if data.Status == "Occupied" && params.Status == "Available" {
+		return resp, exception.Error{
+			Status:  response.StatusBadRequest,
+			Message: "It must first be set to Cleaning In Progress or Maintenance Needed.",
+			Errors:  exception.ErrBadRequest,
+		}
 	}
 
 	// map insert
