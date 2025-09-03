@@ -2,6 +2,7 @@ package unit
 
 import (
 	"context"
+	"database/sql"
 
 	"bobobox/internal/repository/postgresql/unit"
 	"bobobox/pkg/app"
@@ -46,6 +47,28 @@ func (uc *unitService) ListPaginate(ctx context.Context, params helper.Paginatio
 }
 
 func (uc *unitService) Detail(ctx context.Context, id uuid.UUID) (resp UnitDetailResponse, errData exception.Error) {
+	// repository
+	unitRepo, err := uc.repository.UnitFindByID(ctx, id)
+
+	switch err {
+	case nil:
+		err = nil
+	case sql.ErrNoRows:
+		return resp, exception.Error{
+			Status:  response.StatusNotFound,
+			Message: "Unit  Not Found",
+			Errors:  exception.ErrNotFound,
+		}
+	default:
+		return resp, exception.Error{
+			Status:  response.StatusBadRequest,
+			Message: "Something Wrong",
+			Errors:  exception.ErrBadRequest,
+		}
+	}
+
+	// map response
+	resp = UnitDetailResponse(unitRepo)
 
 	return resp, errData
 }
