@@ -124,6 +124,32 @@ func (uc *unitService) Create(ctx context.Context, params UnitCreateRequest) (re
 }
 
 func (uc *unitService) Update(ctx context.Context, id uuid.UUID, params UnitUpdateRequest) (resp UnitUpdateResponse, errData exception.Error) {
+	_, errData = uc.Detail(ctx, id)
+	if errData.Errors != nil {
+		return resp, exception.Error(errData)
+	}
+
+	// map insert
+	unit := entity.Unit{
+		ID:     id,
+		Name:   params.Name,
+		Type:   params.Type,
+		Status: params.Status,
+	}
+
+	err := uc.repository.UnitUpdateByID(ctx, unit)
+	if err != nil {
+		return resp, exception.Error{
+			Status:  response.StatusBadRequest,
+			Message: "Error",
+			Errors:  exception.ErrBadRequest,
+		}
+	}
+
+	params.ID = id
+
+	// map response
+	resp = UnitUpdateResponse(params)
 
 	return resp, errData
 }
