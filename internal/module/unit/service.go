@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	"bobobox/internal/entity"
 	"bobobox/internal/repository/postgresql/unit"
 	"bobobox/pkg/app"
 	"bobobox/pkg/exception"
@@ -75,6 +76,49 @@ func (uc *unitService) Detail(ctx context.Context, id uuid.UUID) (resp UnitDetai
 
 // Create usecase
 func (uc *unitService) Create(ctx context.Context, params UnitCreateRequest) (resp UnitCreateResponse, errData exception.Error) {
+	// repository
+	_, err := uc.repository.UnitFindByName(ctx, params.Name)
+	switch err {
+	case nil:
+		return resp, exception.Error{
+			Status:  response.StatusConflicted,
+			Message: "This Unit  Already Exsist",
+			Errors:  exception.ErrConflicted,
+		}
+	case sql.ErrNoRows:
+		err = nil
+	default:
+		return resp, exception.Error{
+			Status:  response.StatusBadRequest,
+			Message: "Something Wrong",
+			Errors:  exception.ErrBadRequest,
+		}
+	}
+
+	unitID := uuid.New()
+
+	// map insert
+	unit := entity.Unit{
+		ID:     unitID,
+		Name:   params.Name,
+		Type:   params.Type,
+		Status: params.Status,
+	}
+
+	// save to db
+	err = uc.repository.UnitInsert(ctx, unit)
+	if err != nil {
+		return resp, exception.Error{
+			Status:  response.StatusInternalServerError,
+			Message: "Error",
+			Errors:  exception.ErrInternalServer,
+		}
+	}
+
+	params.ID = unitID
+
+	// map response
+	resp = UnitCreateResponse(params)
 
 	return resp, errData
 }
