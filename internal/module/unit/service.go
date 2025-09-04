@@ -140,8 +140,6 @@ func (uc *unitService) Update(ctx context.Context, id uuid.UUID, params UnitUpda
 	// map insert
 	unit := entity.Unit{
 		ID:     id,
-		Name:   params.Name,
-		Type:   params.Type,
 		Status: params.Status,
 	}
 

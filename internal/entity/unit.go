@@ -26,8 +26,6 @@ func (a *Unit) ToInsert() []interface{} {
 func (a *Unit) ToUpdate() []interface{} {
 	return []interface{}{
 		a.ID,
-		a.Name,
-		a.Type,
 		a.Status,
 	}
 }

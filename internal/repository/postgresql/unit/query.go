@@ -58,9 +58,7 @@ const (
 	UPDATE_BY_ID = `
 		UPDATE unit
 		SET 
-			name = $2,
-			type = $3,
-			status = $4,
+			status = $2,
 			"lastUpdated" = NOW()
 		WHERE 
 			id = $1
